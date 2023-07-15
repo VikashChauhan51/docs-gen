@@ -6,17 +6,27 @@ using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace DocsGen.App;
-internal class Class1
+public class Class1
 {
+
+    public string[] GetArray()
+    {
+        return new string[0];
+    }
+
+    public T[] GetArray<T>(string[] data, List<string> info, BasicGeneric<Base,int> state, T[] kgb)
+    {
+        return kgb;
+    }
 }
 
 
-public class BasicGeneric<T,V>
+public class BasicGeneric<T, V>
 {
 
 }
-public class AdvanceGeneric<T, U>: Test<T,U> where T : class ,new()
-    where U: struct
+public class AdvanceGeneric<T, U> : Test<T, U> where T : class, new()
+    where U : struct
 {
 
 }

@@ -34,14 +34,14 @@ public class MarkdownGenerator : DocGenerator
 
     private void GetMethodsInfo(Type type, StringBuilder sb)
     {
-        var methods = type.GetPublicAndProtectedInstanceAndStaticMethods();
+        var methods = type.GetPublicAndProtectedInstanceAndStaticMethods().Where(x => x.Name.Contains("GetArray"));
         if (methods is not null && methods.Any())
         {
             sb.AppendLine("## Methods");
             sb.AppendLine();
             foreach (var method in methods)
             {
-                var parameters = method.GetParameters().Select(p => GetGenericTypeName(p.ParameterType)).ToList();
+                var parameters = method.GetParameters().Select(p => GetGenericParemeterTypeName(p)).ToList();
                 string returnTypeText;
                 if (method.ReturnType.IsGenericType)
                 {
@@ -53,7 +53,15 @@ public class MarkdownGenerator : DocGenerator
                 {
                     var returnParms = method.ReturnType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
                     var returnParmText = string.Join(",", returnParms);
-                    returnTypeText = $"[{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>]";
+                    if (!string.IsNullOrEmpty(returnParmText))
+                    {
+                        returnTypeText = $"[{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>]";
+                    }
+                    else
+                    {
+                        returnTypeText = $"{method.ReturnType.Name.Split('`')[0]}";
+                    }
+
                 }
                 else
                 {
@@ -81,7 +89,7 @@ public class MarkdownGenerator : DocGenerator
         }
     }
 
-  
+
     private void GetPropertiesInfo(Type type, StringBuilder sb)
     {
         var properties = type.GetPublicAndProtectedInstanceAndStaticProperties();
@@ -248,7 +256,44 @@ public class MarkdownGenerator : DocGenerator
             return $"{name}<{parmText}>";
         }
 
+        if (type.IsArray)
+        {
+            var returnParms = type.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
+            var returnParmText = string.Join(",", returnParms);
+            if (!string.IsNullOrEmpty(returnParmText))
+            {
+                return $"[{type.Name.Split('`')[0]}<{returnParmText}>]";
+            }
+            else
+            {
+                return $"{type.Name.Split('`')[0]}";
+            }
+        }
         return type.Name;
     }
 
+
+    private string GetGenericParemeterTypeName(ParameterInfo type)
+    {
+        var pName = type.Name.Split('`')[0];
+         
+        if (type.ParameterType.IsGenericType)
+        {
+            var name = type.ParameterType.Name.Split('`')[0];
+            var parameters = type.ParameterType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
+            var parmText = string.Join(",", parameters);
+            return $"`{name}<{parmText}>` {pName}";
+        }
+
+        if (type.ParameterType.IsArray)
+        {
+            var returnParms = type.ParameterType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
+            var returnParmText = string.Join(",", returnParms);
+            if (!string.IsNullOrEmpty(returnParmText))
+            {
+                return $"`{type.ParameterType.Name.Split('`')[0]}<{returnParmText}>[]` {pName}";
+            }
+        }
+        return $"`{type.ParameterType.Name.Split('`')[0]}` {pName}"; ;
+    }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DocsGen.Core;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace DocsGen.App;
@@ -86,7 +87,7 @@ public class MyFieldClass : MyFieldClassBase
     public int MyProperty2;
 }
 
-public class MyConstructorClassBase 
+public class MyConstructorClassBase
 {
     public MyConstructorClassBase()
     {
@@ -103,7 +104,7 @@ public class MyConstructorClassBase
     }
 }
 
-public class MyConstructorClass<T>: MyConstructorClassBase
+public class MyConstructorClass<T> : MyConstructorClassBase
 {
     public List<T> MyProperty2 { get; set; }
     public MyConstructorClass()
@@ -111,7 +112,7 @@ public class MyConstructorClass<T>: MyConstructorClassBase
 
     }
 
-     static MyConstructorClass()
+    static MyConstructorClass()
     {
 
     }
@@ -129,5 +130,30 @@ public class MyTuple
     {
 
         return ("", 1);
+    }
+}
+
+
+[Summery("This is document class for demo.")]
+[Remarks(Message = "Demo remarks", DocTexts = new string[] { "this is first paragraph", "this is second paragraph." })]
+public class DocDataClass
+{
+    [Summery("Get the list of user of same name.")]
+    public DocDataClass()
+    {
+
+    }
+
+    [Summery("Get the list of user of same name.")]
+    [Example("example to get user:", @"
+var obj new DocDataClass();
+
+var data = obj.GetUsersByName('ram');")]
+    [Exception("user null exception", nameof(ArgumentNullException))]
+    [Parameter("name", nameof(String), "the user name")]
+    [Returns("return the list of users match with provided name.")]
+    public string[] GetUsersByName(string name)
+    {
+        return new string[0];
     }
 }

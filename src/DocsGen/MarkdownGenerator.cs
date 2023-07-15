@@ -22,10 +22,10 @@ public sealed class MarkdownGenerator : DocGenerator
         GetInheritedInfo(type, sb);
         // Constructors
         GetConstructorsInfo(type, sb);
-        // Public events
-        GetEventsInfo(type, sb);
         // Public fields
         GetFieldsInfo(type, sb);
+        // Public events
+        GetEventsInfo(type, sb);
         // Public properties
         GetPropertiesInfo(type, sb);
         // Public methods
@@ -43,14 +43,15 @@ public sealed class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var constructor in constructors)
             {
-                var parameters = constructor.GetParameters().Select(p => GetGenericParemeterTypeName(p)).ToList();
-
-                sb.AppendLine($"### {constructor.DeclaringType.Name.Split('`')[0]}({string.Join(", ", parameters)})");
                 foreach (var doc in GetDocsGenAttributes(constructor))
                 {
                     sb.AppendLine(doc.ToString(DocumentType));
                     sb.AppendLine();
                 }
+
+                var parameters = constructor.GetParameters().Select(p => GetGenericParemeterTypeName(p)).ToList();
+                sb.AppendLine($"### {constructor.DeclaringType.Name.Split('`')[0]}({string.Join(", ", parameters)})");
+                
             }
 
             sb.AppendLine();
@@ -65,6 +66,11 @@ public sealed class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var method in methods)
             {
+                foreach (var doc in GetDocsGenAttributes(method))
+                {
+                    sb.AppendLine(doc.ToString(DocumentType));
+                    sb.AppendLine();
+                }
                 var parameters = method.GetParameters().Select(p => GetGenericParemeterTypeName(p)).ToList();
                 string returnTypeText;
                 if (method.ReturnType.IsGenericType)
@@ -103,11 +109,7 @@ public sealed class MarkdownGenerator : DocGenerator
                     sb.AppendLine($"### {method.Name}({string.Join(", ", parameters)}): `{returnTypeText}`");
                 }
 
-                foreach (var doc in GetDocsGenAttributes(method))
-                {
-                    sb.AppendLine(doc.ToString(DocumentType));
-                    sb.AppendLine();
-                }
+                
             }
             sb.AppendLine();
         }
@@ -121,6 +123,13 @@ public sealed class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var property in properties)
             {
+
+                foreach (var doc in GetDocsGenAttributes(property))
+                {
+                    sb.AppendLine(doc.ToString(DocumentType));
+                    sb.AppendLine();
+                }
+
                 if (property.PropertyType.IsGenericType)
                 {
                     var name = property.PropertyType.Name.Split('`')[0];
@@ -132,11 +141,6 @@ public sealed class MarkdownGenerator : DocGenerator
                     sb.AppendLine($"### {property.Name} : `{property.PropertyType.Name}`");
                 }
 
-                foreach (var doc in GetDocsGenAttributes(property))
-                {
-                    sb.AppendLine(doc.ToString(DocumentType));
-                    sb.AppendLine();
-                }
             }
             sb.AppendLine();
         }
@@ -150,6 +154,12 @@ public sealed class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var field in fields)
             {
+                foreach (var doc in GetDocsGenAttributes(field))
+                {
+                    sb.AppendLine(doc.ToString(DocumentType));
+                    sb.AppendLine();
+                }
+
                 if (field.FieldType.IsGenericType)
                 {
                     var name = field.FieldType.Name.Split('`')[0];
@@ -161,11 +171,6 @@ public sealed class MarkdownGenerator : DocGenerator
                     sb.AppendLine($"### {field.Name}: `{field.FieldType.Name}`");
                 }
 
-                foreach (var doc in GetDocsGenAttributes(field))
-                {
-                    sb.AppendLine(doc.ToString(DocumentType));
-                    sb.AppendLine();
-                }
             }
             sb.AppendLine();
         }
@@ -179,6 +184,11 @@ public sealed class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var @event in events)
             {
+                foreach (var doc in GetDocsGenAttributes(@event))
+                {
+                    sb.AppendLine(doc.ToString(DocumentType));
+                    sb.AppendLine();
+                }
 
                 if (@event.EventHandlerType.IsGenericType)
                 {
@@ -190,14 +200,7 @@ public sealed class MarkdownGenerator : DocGenerator
                 {
                     sb.AppendLine($"### {@event.Name}: `{@event.EventHandlerType}`");
                 }
-
-
-
-                foreach (var doc in GetDocsGenAttributes(@event))
-                {
-                    sb.AppendLine(doc.ToString(DocumentType));
-                    sb.AppendLine();
-                }
+                
             }
             sb.AppendLine();
         }

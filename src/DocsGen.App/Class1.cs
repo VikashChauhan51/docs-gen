@@ -3,12 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DocsGen.App;
 internal class Class1
 {
 }
 
+
+public class BasicGeneric<T,V>
+{
+
+}
+public class AdvanceGeneric<T, U>: Test<T,U> where T : class ,new()
+    where U: struct
+{
+
+}
 public class Base { }
 public class Test<T, U>
     where U : struct

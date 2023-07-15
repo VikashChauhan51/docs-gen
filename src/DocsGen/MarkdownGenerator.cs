@@ -1,6 +1,7 @@
 ﻿
 using DocsGen.Core;
 using Reflector;
+using System.Reflection;
 using System.Text;
 
 namespace DocsGen;
@@ -223,7 +224,7 @@ public class MarkdownGenerator : DocGenerator
         }
     }
 
-    private static void GetInheritedInfo(Type type, StringBuilder sb)
+    private void GetInheritedInfo(Type type, StringBuilder sb)
     {
         var inheritedTypes = type.GetParentTypes();
         if (inheritedTypes != null && inheritedTypes.Any())
@@ -232,57 +233,72 @@ public class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var parent in inheritedTypes)
             {
-                if (parent.IsGenericType)
-                {
-                    var name = parent.Name.Split('`')[0];
-                    var parameters = parent.GetGenericArguments().Select(p => p.Name.Split('`')[0]).ToList();
-                    var parmText = string.Join(",", parameters);
-                    sb.AppendLine($"- `{name}<{parmText}>`");
-                }
-                else
-                {
-                    sb.AppendLine($"- `{parent.Name}`");
-                }
-
+                GetTypeInfo(parent, sb, "-");
             }
 
         }
     }
 
+   
     private void GetBasicInfo(Type type, StringBuilder sb)
     {
-        if (type.IsGenericType)
-        {
-            var name = type.Name.Split('`')[0];
-            var parameters = type.GetGenericArguments().Select(p =>
-            {
-                if (p.IsGenericParameter)
-                {
-                    var constraints = p.GetGenericParameterConstraints().Select(x => x.Name).ToArray();
-                    var constraintsText = string.Join(",", constraints);
-                    return $"{p.Name}:{(string.IsNullOrEmpty(constraintsText) ? Reference_Type : constraintsText)}";
-                }
-                return p.Name;
-            }
-
-            ).ToList();
-
-            var parmText = string.Join(",", parameters);
-            sb.AppendLine($"# `{name}<{parmText}>`");
-            sb.AppendLine();
-        }
-        else
-        {
-            sb.AppendLine($"# `{type.Name}`");
-            sb.AppendLine();
-        }
+        GetTypeInfo(type, sb,"#");
+        sb.AppendLine();
         sb.AppendLine($"**Namespace:** `{type.Namespace ?? type.Assembly?.GetName().Name}`");
 
-        // Class summary from XML comments
         foreach (var doc in GetDocsGenAttributes(type))
         {
             sb.AppendLine(doc.ToString(DocumentType));
             sb.AppendLine();
         }
     }
+
+    private void GetTypeInfo(Type type, StringBuilder sb, string seprator)
+    {
+        if (type.IsGenericType)
+        {
+            var name = type.Name.Split('`')[0];
+            var parameters = type.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
+            var parmText = string.Join(",", parameters);
+            sb.AppendLine($"{seprator} `{name}<{parmText}>`");
+        }
+        else
+        {
+            sb.AppendLine($"{seprator} `{type.Name}`");
+        }
+    }
+
+    private string GetGenericTypeName(Type type)
+    {
+        if (type.IsGenericParameter)
+        {
+            var constraints = type.GetGenericParameterConstraints().Select(x => x.Name).ToArray();
+            var constraintsText = string.Join(",", constraints);
+
+            if (string.IsNullOrEmpty(constraintsText))
+            {
+                var attributes = type.GenericParameterAttributes;
+                if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) != 0)
+                {
+                    return $"{type.Name}:{Reference_Type}";
+                }
+                return type.Name;
+            }
+            else
+            {
+                return $"{type.Name}:{constraintsText}";
+            }
+        }
+
+        if (type.IsGenericType)
+        {
+            var name = type.Name.Split('`')[0];
+            var parameters = type.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
+            var parmText = string.Join(",", parameters);
+            return $"{name}<{parmText}>";
+        }
+
+        return type.Name;
+    }
+
 }

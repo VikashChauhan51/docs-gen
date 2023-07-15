@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 
 namespace DocsGen;
-public class MarkdownGenerator : DocGenerator
+public sealed class MarkdownGenerator : DocGenerator
 {
     public override DocType DocumentType => DocType.Md;
 
@@ -20,6 +20,8 @@ public class MarkdownGenerator : DocGenerator
         GetBasicInfo(type, sb);
         //Inherited types
         GetInheritedInfo(type, sb);
+        // Constructors
+        GetConstructorsInfo(type, sb);
         // Public events
         GetEventsInfo(type, sb);
         // Public fields
@@ -32,9 +34,31 @@ public class MarkdownGenerator : DocGenerator
         return sb.ToString();
     }
 
+    private void GetConstructorsInfo(Type type, StringBuilder sb)
+    {
+        var constructors = type.GetAllConstructors().Where(c => c.IsPublic || c.IsFamily).ToList();
+        if (constructors!=null && constructors.Any())
+        {
+            sb.AppendLine("## Constructors");
+            sb.AppendLine();
+            foreach (var constructor in constructors)
+            {
+                var parameters = constructor.GetParameters().Select(p => GetGenericParemeterTypeName(p)).ToList();
+
+                sb.AppendLine($"### {constructor.DeclaringType.Name.Split('`')[0]}({string.Join(", ", parameters)})");
+                foreach (var doc in GetDocsGenAttributes(constructor))
+                {
+                    sb.AppendLine(doc.ToString(DocumentType));
+                    sb.AppendLine();
+                }
+            }
+
+            sb.AppendLine();
+        }
+    }
     private void GetMethodsInfo(Type type, StringBuilder sb)
     {
-        var methods = type.GetPublicAndProtectedInstanceAndStaticMethods().Where(x => x.Name.Contains("GetArray"));
+        var methods = type.GetPublicAndProtectedInstanceAndStaticMethods();
         if (methods is not null && methods.Any())
         {
             sb.AppendLine("## Methods");
@@ -55,7 +79,7 @@ public class MarkdownGenerator : DocGenerator
                     var returnParmText = string.Join(",", returnParms);
                     if (!string.IsNullOrEmpty(returnParmText))
                     {
-                        returnTypeText = $"[{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>]";
+                        returnTypeText = $"{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>[]";
                     }
                     else
                     {
@@ -88,8 +112,6 @@ public class MarkdownGenerator : DocGenerator
             sb.AppendLine();
         }
     }
-
-
     private void GetPropertiesInfo(Type type, StringBuilder sb)
     {
         var properties = type.GetPublicAndProtectedInstanceAndStaticProperties();
@@ -119,7 +141,6 @@ public class MarkdownGenerator : DocGenerator
             sb.AppendLine();
         }
     }
-
     private void GetFieldsInfo(Type type, StringBuilder sb)
     {
         var fields = type.GetPublicAndProtectedInstanceAndStaticFields();
@@ -149,7 +170,6 @@ public class MarkdownGenerator : DocGenerator
             sb.AppendLine();
         }
     }
-
     private void GetEventsInfo(Type type, StringBuilder sb)
     {
         var events = type.GetPublicAndProtectedInstanceAndStaticEvents();
@@ -182,7 +202,6 @@ public class MarkdownGenerator : DocGenerator
             sb.AppendLine();
         }
     }
-
     private void GetInheritedInfo(Type type, StringBuilder sb)
     {
         var inheritedTypes = type.GetParentTypes();
@@ -197,8 +216,6 @@ public class MarkdownGenerator : DocGenerator
 
         }
     }
-
-
     private void GetBasicInfo(Type type, StringBuilder sb)
     {
         GetTypeInfo(type, sb, "#");
@@ -225,7 +242,6 @@ public class MarkdownGenerator : DocGenerator
             sb.AppendLine($"{seprator} `{type.Name}`");
         }
     }
-
     private string GetGenericTypeName(Type type)
     {
         if (type.IsGenericParameter)
@@ -271,12 +287,10 @@ public class MarkdownGenerator : DocGenerator
         }
         return type.Name;
     }
-
-
     private string GetGenericParemeterTypeName(ParameterInfo type)
     {
         var pName = type.Name.Split('`')[0];
-         
+
         if (type.ParameterType.IsGenericType)
         {
             var name = type.ParameterType.Name.Split('`')[0];

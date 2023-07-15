@@ -41,5 +41,10 @@ public abstract class DocGenerator
         return @event?.GetCustomAttributes<DocsGenAttribute>() ?? new List<DocsGenAttribute>();
     }
 
+    protected IEnumerable<DocsGenAttribute> GetDocsGenAttributes(ConstructorInfo constructor)
+    {
+        return constructor?.GetCustomAttributes<DocsGenAttribute>() ?? new List<DocsGenAttribute>();
+    }
+
 
 }

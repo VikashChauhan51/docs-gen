@@ -41,55 +41,35 @@ public class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var method in methods)
             {
+                var parameters = method.GetParameters().Select(p => GetGenericTypeName(p.ParameterType)).ToList();
+                string returnTypeText;
+                if (method.ReturnType.IsGenericType)
+                {
+                    var returnParms = method.ReturnType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
+                    var returnParmText = string.Join(",", returnParms);
+                    returnTypeText = $"{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>";
+                }
+                else if (method.ReturnType.IsArray || method.ReturnType.IsSZArray)
+                {
+                    var returnParms = method.ReturnType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
+                    var returnParmText = string.Join(",", returnParms);
+                    returnTypeText = $"[{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>]";
+                }
+                else
+                {
+                    returnTypeText = method.ReturnType.Name;
+                }
+
                 if (method.IsGenericMethod)
                 {
                     var pars = method.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList(); ;
                     var parmText = string.Join(",", pars);
-                    var parameters = method.GetParameters().Select(p => GetGenericTypeName(p.ParameterType)).ToList();
-
-                    if (method.ReturnType.IsGenericType)
-                    {
-                        var returnParms = method.ReturnType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
-                        var returnParmText = string.Join(",", returnParms);
-                        sb.AppendLine($"### {method.Name.Split('`')[0]}`<{parmText}>`({string.Join(", ", parameters)}): `{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>`");
-                    }
-                    if (method.ReturnType.IsArray || method.ReturnType.IsSZArray)
-                    {
-                        var returnParms = method.ReturnType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
-                        var returnParmText = string.Join(",", returnParms);
-                        sb.AppendLine($"### {method.Name.Split('`')[0]}({string.Join(", ", parameters)}): `[{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>]`");
-                    }
-                    else
-                    {
-                        sb.AppendLine($"### {method.Name.Split('`')[0]}`<{parmText}>`({string.Join(", ", parameters)}): `{method.ReturnType.Name}`");
-                    }
-
+                    sb.AppendLine($"### {method.Name.Split('`')[0]}`<{parmText}>`({string.Join(", ", parameters)}): `{returnTypeText}`");
                 }
                 else
                 {
-                    if (method.ReturnType.IsGenericType)
-                    {
-                        var parameters = method.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
-                        var returnParms = method.ReturnType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
-                        var returnParmText = string.Join(",", returnParms);
-                        sb.AppendLine($"### {method.Name.Split('`')[0]}({string.Join(", ", parameters)}): `{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>`");
-
-                    }
-                    if (method.ReturnType.IsArray || method.ReturnType.IsSZArray)
-                    {
-                        var parameters = method.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
-                        var returnParms = method.ReturnType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
-                        var returnParmText = string.Join(",", returnParms);
-                        sb.AppendLine($"### {method.Name.Split('`')[0]}({string.Join(", ", parameters)}): `[{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>]`");
-                    }
-                    else
-                    {
-                        var parameters = method.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
-                        sb.AppendLine($"### {method.Name}({string.Join(", ", parameters)}): `{method.ReturnType.Name.Split('`')[0]}`");
-                    }
-
+                    sb.AppendLine($"### {method.Name}({string.Join(", ", parameters)}): `{returnTypeText}`");
                 }
-
 
                 foreach (var doc in GetDocsGenAttributes(method))
                 {
@@ -101,6 +81,7 @@ public class MarkdownGenerator : DocGenerator
         }
     }
 
+  
     private void GetPropertiesInfo(Type type, StringBuilder sb)
     {
         var properties = type.GetPublicAndProtectedInstanceAndStaticProperties();

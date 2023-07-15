@@ -115,16 +115,7 @@ public class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var property in properties)
             {
-                if (property.PropertyType.IsGenericType)
-                {
-                    var name = property.PropertyType.Name.Split('`')[0];
-                    var parameters = property.PropertyType.GetGenericArguments().Select(p => p.Name.Split('`')[0]);
-                    sb.AppendLine($"### {property.Name}: `{name}<{string.Join(", ", parameters)}>`");
-                }
-                else
-                {
-                    sb.AppendLine($"### {property.Name} : `{property.PropertyType.Name}`");
-                }
+                GetPropertyInfo(property, sb, "###");
 
                 foreach (var doc in GetDocsGenAttributes(property))
                 {
@@ -253,6 +244,21 @@ public class MarkdownGenerator : DocGenerator
         }
     }
 
+
+    private void GetPropertyInfo(PropertyInfo property, StringBuilder sb, string seprator)
+    {
+        if (property.PropertyType.IsGenericType)
+        {
+            var name = property.PropertyType.Name.Split('`')[0];
+            var parameters = property.PropertyType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
+            var parmText = string.Join(",", parameters);
+            sb.AppendLine($"{seprator} {property.Name}: `{name}<{string.Join(", ", parameters)}>`");
+        }
+        else
+        {
+            sb.AppendLine($"{seprator} {property.Name} : `{property.PropertyType.Name}`");
+        }
+    }
     private void GetTypeInfo(Type type, StringBuilder sb, string seprator)
     {
         if (type.IsGenericType)

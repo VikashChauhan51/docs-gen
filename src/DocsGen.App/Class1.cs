@@ -157,3 +157,52 @@ var data = obj.GetUsersByName('ram');")]
         return new string[0];
     }
 }
+
+/// <summary>
+/// This is My example class.
+/// </summary>
+/// <remarks>
+/// Demo remarks
+/// <para>
+/// this is first paragraph
+/// </para>
+/// <para>
+/// this is second paragraph.
+/// </para>
+/// </remarks>
+public class MyXmlClass
+{
+    public string Name { get; set; }
+
+    /// <summary>
+    /// Get the list of user of same name.
+    /// </summary>
+    public MyXmlClass() { }
+
+    /// <summary>
+    /// Get the list of user of same name.
+    /// </summary>
+    /// <param name="name">name of the user</param>
+    public MyXmlClass(string name)
+    {
+        Name = name;
+    }
+
+    /// <summary>
+    /// Get the list of user of same name.
+    /// </summary>
+    /// <param name="name" <see cref="string"/> >name of the user</param>
+    /// <example>
+    /// example to get user:
+    /// 
+    /// var obj new DocDataClass();
+    ///  var data = obj.GetUsersByName('ram');
+    /// </example>
+    /// <exception cref="ArgumentNullException">
+    /// </exception>
+    /// <returns>return the list of users match with provided name.</returns>
+    public string[] GetUsersByName(string name)
+    {
+        return new string[0];
+    }
+}

@@ -22,7 +22,7 @@ public sealed class ExampleAttribute : DocsGenAttribute
                 builder.AppendLine(base.ToString());
                 builder.AppendLine("<code>");
                 builder.AppendLine(this.Code);
-                builder.AppendLine("<code>");
+                builder.AppendLine("</code>");
                 builder.AppendLine("</example>");
                 break;
             case DocType.Md:

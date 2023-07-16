@@ -18,7 +18,7 @@ public class ExceptionAttribute : DocsGenAttribute
         switch (doc)
         {
             case DocType.Xml:
-                builder.AppendLine($"<exception {(!string.IsNullOrEmpty(this.MemberType) ? $"cref = \"{this.MemberType}\"" : "")} >{base.ToString()}</example>");
+                builder.AppendLine($"<exception {(!string.IsNullOrEmpty(this.MemberType) ? $"cref = \"{this.MemberType}\"" : "")}>{base.ToString()}</exception>");
                 break;
             case DocType.Md:
                 builder.AppendLine($"> {(!string.IsNullOrEmpty(this.MemberType) ? $"`{this.MemberType}`" : "")}: {base.ToString()}");

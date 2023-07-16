@@ -28,6 +28,9 @@ public class ExceptionAttribute : DocsGenAttribute
                 if (string.IsNullOrEmpty(this.MemberType))
                     builder.AppendLine($"- type: {this.MemberType}");
                 break;
+            case DocType.Html:
+                builder.AppendLine($"<p><strong>exception: </strong><span><b>{this.MemberType} </b></span><abbr>{base.ToString()}</abbr></p>");
+                break;
             default:
                 return this.ToString();
         }

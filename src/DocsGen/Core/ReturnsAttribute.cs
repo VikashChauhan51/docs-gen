@@ -27,6 +27,12 @@ public sealed class ReturnsAttribute : DocsGenAttribute
             case DocType.Yml:
                 builder.AppendLine($"returns: {this.ToString()}");
                 break;
+            case DocType.Html:
+                builder.AppendLine("<summary>");
+                builder.AppendLine("<h5>Returns</h5>");
+                builder.AppendLine(this.ToString());
+                builder.AppendLine("</summary>");
+                break;
             default:
                 return ToString();
         }

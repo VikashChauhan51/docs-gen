@@ -3,10 +3,10 @@
 namespace DocsGen.Core;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Interface |  AttributeTargets.Delegate | AttributeTargets.Event | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
-public sealed class SummeryAttribute : DocsGenAttribute
+public sealed class SummaryAttribute : DocsGenAttribute
 {
-    public SummeryAttribute() { }
-    public SummeryAttribute(string message) : base(message) { }
+    public SummaryAttribute() { }
+    public SummaryAttribute(string message) : base(message) { }
 
     public override string ToString(DocType doc)
     {
@@ -14,17 +14,23 @@ public sealed class SummeryAttribute : DocsGenAttribute
         switch (doc)
         {
             case DocType.Xml:
-                builder.AppendLine("<summery>");
+                builder.AppendLine("<summary>");
                 builder.AppendLine(this.ToString());
-                builder.AppendLine("</summery>");
+                builder.AppendLine("</summary>");
                 break;
             case DocType.Md:
-                builder.AppendLine("##### Summery");
+                builder.AppendLine("##### summary");
                 builder.AppendLine(this.ToString());
                 builder.AppendLine(Environment.NewLine);
                 break;
             case DocType.Yml:
-                builder.AppendLine($"summery: {this.ToString()}");
+                builder.AppendLine($"summary: {this.ToString()}");
+                break;
+            case DocType.Html:
+                builder.AppendLine("<summary>");
+                builder.AppendLine("<h5>summary</h5>");
+                builder.AppendLine(this.ToString());
+                builder.AppendLine("</summary>");
                 break;
             default:
                 return ToString();

@@ -47,6 +47,12 @@ public sealed class DocText
             case DocType.Yml:
                 builder.AppendLine(this.ToString());
                 break;
+            case DocType.Html:
+                if (Line)
+                    builder.AppendLine(GetXml());
+                else
+                    builder.Append(GetXml());
+                break;
             default:
                 builder.AppendLine(this.ToString());
                 break;

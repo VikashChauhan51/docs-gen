@@ -134,17 +134,17 @@ public class MyTuple
 }
 
 
-[Summery("This is document class for demo.")]
+[Summary("This is document class for demo.")]
 [Remarks(Message = "Demo remarks", DocTexts = new string[] { "this is first paragraph", "this is second paragraph." })]
 public class DocDataClass
 {
-    [Summery("Get the list of user of same name.")]
+    [Summary("Get the list of user of same name.")]
     public DocDataClass()
     {
 
     }
 
-    [Summery("Get the list of user of same name.")]
+    [Summary("Get the list of user of same name.")]
     [Example("example to get user:", @"
 var obj new DocDataClass();
 

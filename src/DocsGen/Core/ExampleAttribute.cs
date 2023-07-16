@@ -35,6 +35,15 @@ public sealed class ExampleAttribute : DocsGenAttribute
                 builder.AppendLine($"example: {base.ToString()}");
                 builder.AppendLine($"- code: {this.Code}");
                 break;
+            case DocType.Html:
+                builder.AppendLine("<summary>");
+                builder.AppendLine("<h5>Example</h5>");
+                builder.AppendLine(base.ToString());
+                builder.AppendLine("<br/><code>");
+                builder.AppendLine(this.Code);
+                builder.AppendLine("</code><br/>");
+                builder.AppendLine("</summary>");
+                break;
             default:
                 return this.ToString();
         }

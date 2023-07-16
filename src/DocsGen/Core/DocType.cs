@@ -6,5 +6,5 @@ public enum DocType
     Xml,
     Md,
     Yml,
-    html
+    Html
 }

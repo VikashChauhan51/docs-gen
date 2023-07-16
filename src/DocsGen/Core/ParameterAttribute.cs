@@ -31,6 +31,9 @@ public sealed class ParameterAttribute : DocsGenAttribute
                 builder.AppendLine($"- type: {ParameterType}");
                 builder.AppendLine($"- message: {Message}");
                 break;
+            case DocType.Html:
+                builder.AppendLine($"<p><strong>param: </strong><span>{this.ParameterName} <strong>({this.ParameterType})</strong> : </span><abbr>{Message}</abbr></p>");
+                break;
             default:
                 return this.ToString();
         }

@@ -55,6 +55,21 @@ public sealed class RemarksAttribute : DocsGenAttribute
                     }
                 }
                 break;
+            case DocType.Html:
+                builder.AppendLine("<summary>");
+                builder.AppendLine("<h5>Remarks</h5>");
+                builder.AppendLine(base.ToString());
+                foreach (var para in DocTexts)
+                {
+                    if (!string.IsNullOrEmpty(para))
+                    {
+                        builder.AppendLine("<p>");
+                        builder.AppendLine(para);
+                        builder.AppendLine("</p>");
+                    }
+                }
+                builder.AppendLine("</summary>");
+                break;
             default:
                 return this.ToString();
         }

@@ -15,22 +15,31 @@ strong {
 color: #c7254e
 }
 .container {
-    padding-right: 15px;
-    padding-left: 15px;
-    margin-right: auto;
-    margin-left: auto;
+    width: 100%;
+    margin: 0 auto;
+    max-width: 62.5em;
 }
 
 body {
-    font-family: ""Helvetica Neue"",Helvetica,Arial,sans-serif;
-    font-size: 14px;
-    line-height: 1.42857143;
-    color: #333;
-    background-color: #fff;
-padding: 10px;
+    background: #fff;
+    color: rgba(0,0,0,.8);
+    padding: 0;
+    margin: 0;
+    font-family:serif;
+    line-height: 1;
+    position: relative;
+    cursor: auto;
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+    word-wrap: anywhere;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
 }
 .card {
-  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+border: 1px solid #cccccc;
+  border-radius: 5px;
+margin-bottom: 10px;
 padding: 15px;
 }
 
@@ -38,15 +47,48 @@ padding: 15px;
   font-size: 18px;
 }
 
-code {
-  font-family: monospace;
-  
-  padding: 2px 4px;
-  background-color: #f1f1f1;
-  color:#c7254e;
-  border-radius: 4px;
+.card h3 {
+  font-size: 22px;
+  margin-bottom: 10px;
+ border-bottom: 1px solid #ccc;
 }
 
+.card p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.card a {
+  text-decoration: none;
+  color: #000000;
+}
+
+.card a:hover {
+  color: #0000ff;
+}
+
+
+code
+{
+font-family:monospace;
+font-weight:200;
+color:rgba(0,0,0,.9);
+border-radius: 4px;
+background-color: #f1f1f1;
+}
+pre
+{
+white-space:pre-wrap;
+color:rgba(0,0,0,.9);
+font-family:monospace;
+line-height:1.0;
+text-rendering:optimizeSpeed;
+ background-color: #f1f1f1;
+padding: 10px;
+
+}
+pre code,pre pre{color:inherit;font-size:inherit;line-height:inherit}
+pre>code{display:block}
 hr {
 
   height: 1px;
@@ -81,6 +123,45 @@ label {
     color: #337ab7;
   }
 
+
+.pill {
+  display: inline-block;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  padding: 10px 15px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.pill:hover {
+  background-color: #eeeeee;
+}
+
+.pill.active {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.capsule {
+  display: inline-block;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 30px;
+  padding: 10px 15px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.capsule:hover {
+  background-color: #eeeeee;
+}
+
+.capsule.active {
+  background-color: #000000;
+  color: #ffffff;
+}
+
 </style>"; 
 
     public override Task<string> GenerateAsync(Type type) => Task.FromResult(Generate(type));
@@ -93,9 +174,11 @@ label {
         sb.AppendLine("<html>");
         sb.AppendLine("<head>");
         sb.AppendLine($"<title>{type.Name.Split('`')[0]}</title>");
+        sb.AppendLine(@"<link rel=""stylesheet"" href=""https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700""/>");
         sb.AppendLine(style);
         sb.AppendLine("</head>");
         sb.AppendLine("<body>");
+        sb.AppendLine($@"<div class=""container"">");
         // Class name
         GetBasicInfo(type, sb);
         //Inherited types
@@ -110,6 +193,7 @@ label {
         GetPropertiesInfo(type, sb);
         // Public methods
         GetMethodsInfo(type, sb);
+        sb.AppendLine("<div>");
         sb.AppendLine("</body>");
         sb.AppendLine("</html>");
         return sb.ToString();

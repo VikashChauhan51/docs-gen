@@ -17,7 +17,7 @@ color: #c7254e
 .container {
     width: 100%;
     margin: 0 auto;
-    max-width: 62.5em;
+    max-width: 75.5em;
 }
 
 body {
@@ -161,14 +161,36 @@ label {
   background-color: #000000;
   color: #ffffff;
 }
+.hljs {
+  background-color: inherit;
+  padding: 0;
+}
+.hljs-keyword {
+  color: #0c84ef;
+}
 
+.hljs-string {
+  color: #0c84ef;
+}
+.hljs-type {
+  color: rgb(86,156,214);
+}
+
+.hljs-interface {
+  color: #9f9f38;
+}
+.hljs-default {
+    color: rgba(0,0,0,.9);
+    font-size: inherit;
+    line-height: inherit;
+}
 </style>"; 
 
     public override Task<string> GenerateAsync(Type type) => Task.FromResult(Generate(type));
     public override string Generate(Type type)
     {
         if (!Valid(type)) return type?.ToString() ?? string.Empty;
-
+     
         var sb = new StringBuilder();
         sb.AppendLine("<!DOCTYPE html>");
         sb.AppendLine("<html>");
@@ -419,7 +441,11 @@ label {
         sb.AppendLine($@"<hr/>");
         sb.AppendLine(@"<div class=""card"">");
         sb.AppendLine($@"<p><strong>Namespace: </strong><span>{type.Namespace ?? type.Assembly?.GetName().Name}</span></p>");
+        sb.AppendLine($@"<p><strong>Assembly: </strong><span>{type.Assembly?.GetName().Name}.dll</span></p>");
+        sb.AppendLine($@"<h4>Syntax</h4>");
+        sb.AppendLine($@"<pre><code class=""hljs"">{GetTypeAsString(type)}</code></pre>");
         sb.AppendLine(@"<div class=""card-body"">");
+        //  var nnn = GetTypeAsString(type);
         foreach (var doc in GetDocsGenAttributes(type))
         {
             sb.AppendLine(doc.ToString(DocumentType));

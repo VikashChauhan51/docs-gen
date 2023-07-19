@@ -25,13 +25,22 @@ public class Class1
     }
 }
 
-
-public class BasicGeneric<T, V>
+[Summary("This is document class for demo.")]
+[Remarks(Message = "Demo remarks", DocTexts = new string[] { "this is first paragraph", "this is second paragraph." })]
+public class BasicGeneric<T, V> 
 {
 
 }
+
+public class BGeneric<T, V,X> where T:unmanaged where V:unmanaged where X: class,new()
+{
+
+}
+
+[Summary("This is document class for demo.")]
+[Remarks(Message = "Demo remarks", DocTexts = new string[] { "this is first paragraph", "this is second paragraph." })]
 public class AdvanceGeneric<T, U> : Test<T, U> where T : class, new()
-    where U : struct
+where U : struct
 {
 
 }

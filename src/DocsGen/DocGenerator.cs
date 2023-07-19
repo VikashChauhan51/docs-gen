@@ -56,7 +56,6 @@ public abstract class DocGenerator
         {
             return string.Empty;
         }
-
         var accessSpecifier = type.GetAccessModifier();
         var typeModifier = type.GetTypeModifiers();
         var typename = GetTypeName(type);
@@ -71,15 +70,16 @@ public abstract class DocGenerator
             inhereted.Add(GetTypeName(inter));
         }
         var inheritedText = string.Join(",", inhereted);
+        var constraints = GetTypeConstraints(type);
+        var constraintsText = string.Join(" ", constraints);
         if (DocumentType == DocType.Html)
         {
-            return $@"&nbsp;<br><span class=""hljs-keyword"">{accessSpecifier}</span> <span class=""hljs-keyword"">{typeModifier}</span><span class=""hljs-type"">{typename}</span>{(inheritedText.Length > 0 ? $":{inheritedText}" : "")}<br>&nbsp;";
+            return $@"&nbsp;<br><span class=""hljs-keyword"">{accessSpecifier}</span> <span class=""hljs-keyword"">{typeModifier}</span><span class=""hljs-type"">{typename}</span>{(inheritedText.Length > 0 ? $":{inheritedText}" : "")} {(constraints.Any() ? constraintsText : "")}<br>&nbsp;";
 
         }
-        return $@"{accessSpecifier} {typeModifier}{typename}{(inheritedText.Length > 0 ? $":{inheritedText}" : "")}";
+        return $@"{accessSpecifier} {typeModifier}{typename}{(inheritedText.Length > 0 ? $":{inheritedText}" : "")} {(constraints.Any() ? constraintsText : "")}";
 
     }
-
     protected string GetTypeName(Type type)
     {
         var (startTag, endTag) = GetWrapperTag(type.IsPrimitive(), type.IsInterface);
@@ -99,49 +99,6 @@ public abstract class DocGenerator
     {
         var (startTag, endTag) = GetWrapperTag(type.IsPrimitive(), type.IsInterface);
         var (start, end) = GetSeperators();
-        if (type.IsGenericParameter)
-        {
-            var (parmStartTag, parmEndTag) = GetWrapperTag(type.IsPrimitive(), true);
-            var (defaultStartTag, defaultEndTag) = GetWrapperTag(true, false);
-            var constraints = type.GetGenericParameterConstraints().Select(x =>
-            {
-                if (x == typeof(ValueType) || x.IsPrimitive())
-                {
-                    return $"{defaultStartTag}{ValueType_Type}{defaultEndTag}";
-                }
-                return $"{startTag}{x.Name}{endTag}";
-            }).ToArray();
-            var constraintsText = string.Join(",", constraints);
-
-            if (string.IsNullOrEmpty(constraintsText))
-            {
-                var attributes = type.GenericParameterAttributes;
-                if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) == GenericParameterAttributes.ReferenceTypeConstraint)
-                {
-                    if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
-                    {
-                        return $"{parmStartTag}{type.Name}{parmEndTag}:{defaultStartTag}{Reference_Type}{defaultEndTag},{defaultStartTag}{Default_Constructor}{defaultEndTag}";
-                    }
-
-                    return $"{parmStartTag}{type.Name}{parmEndTag}:{defaultStartTag}{Reference_Type}{defaultEndTag}";
-                }
-                if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
-                {
-                    return $"{parmStartTag}{type.Name}{parmEndTag}:{defaultStartTag}{Default_Constructor}{defaultEndTag}";
-                }
-
-                if ((attributes & GenericParameterAttributes.NotNullableValueTypeConstraint) == GenericParameterAttributes.NotNullableValueTypeConstraint)
-                {
-                    return $"{parmStartTag}{type.Name}{parmEndTag}:{defaultStartTag}{ValueType_Type}{defaultEndTag}";
-                }
-                return $"{parmStartTag}{type.Name}{parmEndTag}";
-            }
-            else
-            {
-                return $"{parmStartTag}{type.Name}{parmEndTag}:{constraintsText}";
-            }
-        }
-
 
         if (type.IsGenericType)
         {
@@ -168,6 +125,67 @@ public abstract class DocGenerator
         return $"{startTag}{type.Name}{endTag}";
     }
 
+
+    protected HashSet<string> GetTypeConstraints(Type type)
+    {
+        var (defaultStartTag, defaultEndTag) = GetWrapperTag(true, false);
+        var parmData = new HashSet<string>();
+        if (type.IsGenericType)
+        {
+            var parmeters = type.GetGenericArguments();
+            foreach (var prm in parmeters)
+            {
+                var (parmStartTag, parmEndTag) = GetWrapperTag(prm.IsPrimitive(), prm.IsInterface);
+                if (prm.IsGenericParameter)
+                {
+                    var constrains = prm.GetGenericParameterConstraints().Where(x => x != typeof(ValueType)).Select(x =>
+                    {
+                        if (x.IsInterface || x.IsEnum)
+                        {
+                            return $"{parmStartTag}{x.Name}{parmEndTag}";
+                        }
+                        var (parmTypeStartTag, parmTypeEndTag) = GetWrapperTag(type.IsPrimitive(), false);
+                        return $"{parmTypeStartTag}{x.Name}{parmTypeEndTag}";
+                    }
+                   ).ToArray();
+
+                    var constraintsText = string.Join(",", constrains);
+                    if (constraintsText.Length > 0)
+                    {
+                        //custom type as constraints
+                        parmData.Add($"{defaultStartTag}where{defaultEndTag} {parmStartTag}{prm.Name}{parmEndTag}:{constraintsText}");
+                    }
+                    else
+                    {
+                        var attributes = prm.GenericParameterAttributes;
+                        // default classs constraints
+                        if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) == GenericParameterAttributes.ReferenceTypeConstraint)
+                        {
+                            if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
+                            {
+                                parmData.Add($"{defaultStartTag}where{defaultEndTag} {parmStartTag}{prm.Name}{parmEndTag}:{defaultStartTag}class{defaultEndTag},{defaultStartTag}new{defaultEndTag}()");
+                            }
+                            else
+                            {
+                                parmData.Add($"{defaultStartTag}where{defaultEndTag} {parmStartTag}{prm.Name}{parmEndTag}:{defaultStartTag}class{defaultEndTag}");
+                            }
+                        }
+                        else if ((attributes & GenericParameterAttributes.NotNullableValueTypeConstraint) == GenericParameterAttributes.NotNullableValueTypeConstraint)
+                        {
+                            parmData.Add($"{defaultStartTag}where{defaultEndTag} {parmStartTag}{prm.Name}{parmEndTag}:{defaultStartTag}struct{defaultEndTag}");
+                        }
+                        else if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
+                        {
+                            parmData.Add($"{defaultStartTag}where{defaultEndTag} {parmStartTag}{prm.Name}{parmEndTag}:{defaultStartTag}new{defaultEndTag}()");
+                        }
+
+                    }
+                }
+            }
+        }
+
+        return parmData;
+    }
     protected (string start, string end) GetSeperators()
     {
         switch (DocumentType)

@@ -471,17 +471,32 @@ label {
     {
         if (type.IsGenericParameter)
         {
-            var constraints = type.GetGenericParameterConstraints().Select(x => x.Name).ToArray();
+            var constraints = type.GetGenericParameterConstraints().Where(x => x != typeof(ValueType)).Select(x => x.Name).ToArray();
             var constraintsText = string.Join(",", constraints);
 
             if (string.IsNullOrEmpty(constraintsText))
             {
                 var attributes = type.GenericParameterAttributes;
-                if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) != 0)
+                if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) == GenericParameterAttributes.ReferenceTypeConstraint)
                 {
+                    if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
+                    {
+                        return $"<span>{type.Name}:<strong>{Reference_Type}</strong>,<strong>{Default_Constructor}</strong></span>";
+                    }
                     return $"<span>{type.Name}:<strong>{Reference_Type}</strong></span>";
+
                 }
-                return type.Name;
+
+                if ((attributes & GenericParameterAttributes.NotNullableValueTypeConstraint) == GenericParameterAttributes.NotNullableValueTypeConstraint)
+                {
+                    return $"<span>{type.Name}:<strong>{ValueType_Type}</strong></span>";
+                }
+                if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
+                {
+                    return $"<span>{type.Name}:<strong>{Default_Constructor}</strong></span>";
+                }
+
+                    return type.Name;
             }
             else
             {

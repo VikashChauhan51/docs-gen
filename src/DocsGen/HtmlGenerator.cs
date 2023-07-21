@@ -184,6 +184,9 @@ label {
     font-size: inherit;
     line-height: inherit;
 }
+.declaration {
+    color: #a2a2a2;
+}
 </style>"; 
 
     public override Task<string> GenerateAsync(Type type) => Task.FromResult(Generate(type));
@@ -255,7 +258,7 @@ label {
             sb.AppendLine("<h2>Methods</h2>");
             sb.AppendLine($@"<hr/>");
             foreach (var method in methods)
-            {
+            {             
                 sb.AppendLine(@"<div class=""card"">");
                 var parameters = method.GetParameters().Select(p => GetGenericParemeterTypeName(p)).ToList();
                 string returnTypeText;
@@ -294,7 +297,8 @@ label {
                 {
                     sb.AppendLine($@"<h3 class=""card-title""><p><span>{method.Name}({string.Join(", ", parameters)}):<strong>{returnTypeText}</strong></span></p></h3>");
                 }
-                
+                sb.AppendLine($@"<h5 class=""declaration"">Declaration</h5>");
+                sb.AppendLine($@"<pre><code class=""hljs"">{GetMethodAsString(method)}</code></pre>");
                 sb.AppendLine(@"<div class=""card-body"">");
                 foreach (var doc in GetDocsGenAttributes(method))
                 {
@@ -445,7 +449,6 @@ label {
         sb.AppendLine($@"<h4>Syntax</h4>");
         sb.AppendLine($@"<pre><code class=""hljs"">{GetTypeAsString(type)}</code></pre>");
         sb.AppendLine(@"<div class=""card-body"">");
-        //  var nnn = GetTypeAsString(type);
         foreach (var doc in GetDocsGenAttributes(type))
         {
             sb.AppendLine(doc.ToString(DocumentType));

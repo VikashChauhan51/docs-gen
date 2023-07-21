@@ -116,7 +116,7 @@ public abstract class DocGenerator
         }
         else
         {
-            return $@"{constructorAccessSpecifier} {constructorAccessModifier}{name}({parametersText})";
+            return $@"{constructorAccessSpecifier} {constructorAccessModifier} {name}({parametersText})";
         }
     }
     protected string GetMethodAsString(MethodInfo method)
@@ -170,23 +170,36 @@ public abstract class DocGenerator
         var propertyModifier = property.GetPropertyModifiers();
         var propertyReturnTypes = GetTypeMemberReturnTypes(property.PropertyType);
         var name = property.Name.Split("`")[0];
-        var getText = property.CanRead ? $@"<span class=""hljs-keyword"">get</span>;" : "";
-        var setText = string.Empty;
-        if (property.SetIsAllowed())
-        {
-            setText = $@"<span class=""hljs-keyword"">set</span>;";
-        }
-        else if (property.SetIsAllowed(checkInitSetter: true))
-        {
-            setText = $@"<span class=""hljs-keyword"">init</span>;";
-        }
-        var propertGeterSetter = $"{{{getText}{setText}}}";
+       
         if (DocumentType == DocType.Html)
         {
+            var getText = property.CanRead ? $@"<span class=""hljs-keyword"">get</span>;" : "";
+            var setText = string.Empty;
+            if (property.SetIsAllowed())
+            {
+                setText = $@"<span class=""hljs-keyword"">set</span>;";
+            }
+            else if (property.SetIsAllowed(checkInitSetter: true))
+            {
+                setText = $@"<span class=""hljs-keyword"">init</span>;";
+            }
+            var propertGeterSetter = $"{{{getText}{setText}}}";
+
             return $@"&nbsp;<br><span class=""hljs-keyword"">{propertyAccessSpecifier}</span> <span class=""hljs-keyword"">{propertyModifier}</span>&nbsp;{propertyReturnTypes}<span class=""hljs-type""> {name}</span>{propertGeterSetter}<br>&nbsp;";
         }
         else
         {
+            var getText = property.CanRead ? $"get;" : "";
+            var setText = string.Empty;
+            if (property.SetIsAllowed())
+            {
+                setText = $@"set;";
+            }
+            else if (property.SetIsAllowed(checkInitSetter: true))
+            {
+                setText = $@"init;";
+            }
+            var propertGeterSetter = $"{{{getText}{setText}}}";
             return $@"{propertyAccessSpecifier} {propertyModifier} {propertyReturnTypes} {name}{propertGeterSetter}";
         }
 
@@ -470,7 +483,7 @@ public abstract class DocGenerator
             case DocType.Xml:
                 return new("", "");
             case DocType.Md:
-                return new("`", "`");
+                return new("", "");
             case DocType.Yml:
                 return new("", "");
             case DocType.Html:
@@ -487,7 +500,7 @@ public abstract class DocGenerator
             case DocType.Xml:
                 return new("", "");
             case DocType.Md:
-                return new("`", "`");
+                return new("", "");
             case DocType.Yml:
                 return new("", "");
             case DocType.Html:

@@ -112,6 +112,7 @@ ul {
     margin-inline-start: 0px;
     margin-inline-end: 0px;
     padding-inline-start: 40px;
+    font-size: 1.0rem;
 }
 
 .card-title span {

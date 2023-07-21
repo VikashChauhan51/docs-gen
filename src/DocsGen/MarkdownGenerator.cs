@@ -36,21 +36,29 @@ public sealed class MarkdownGenerator : DocGenerator
 
     private void GetConstructorsInfo(Type type, StringBuilder sb)
     {
-        var constructors = type.GetAllConstructors().Where(c => c.IsPublic || c.IsFamily).ToList();
+        var constructors = type.GetAllConstructors().Where(c => c.IsStatic || c.IsPublic || c.IsFamily).ToList();
         if (constructors!=null && constructors.Any())
         {
             sb.AppendLine("## Constructors");
             sb.AppendLine();
             foreach (var constructor in constructors)
             {
+                var parameters = constructor.GetParameters().Select(p => GetGenericParemeterTypeName(p)).ToList();
+                sb.AppendLine($"### {constructor.DeclaringType.Name.Split('`')[0]}({string.Join(", ", parameters)})");
+                sb.AppendLine("---");
+                sb.AppendLine();
+                sb.AppendLine($@"##### Declaration ");
+                sb.AppendLine("```C#");
+                sb.AppendLine();
+                sb.AppendLine(GetConstructorAsString(constructor));
+                sb.AppendLine();
+                sb.AppendLine("```");
+                sb.AppendLine();
                 foreach (var doc in GetDocsGenAttributes(constructor))
                 {
                     sb.AppendLine(doc.ToString(DocumentType));
                     sb.AppendLine();
                 }
-
-                var parameters = constructor.GetParameters().Select(p => GetGenericParemeterTypeName(p)).ToList();
-                sb.AppendLine($"### {constructor.DeclaringType.Name.Split('`')[0]}({string.Join(", ", parameters)})");
                 
             }
 
@@ -66,11 +74,6 @@ public sealed class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var method in methods)
             {
-                foreach (var doc in GetDocsGenAttributes(method))
-                {
-                    sb.AppendLine(doc.ToString(DocumentType));
-                    sb.AppendLine();
-                }
                 var parameters = method.GetParameters().Select(p => GetGenericParemeterTypeName(p)).ToList();
                 string returnTypeText;
                 if (method.ReturnType.IsGenericType)
@@ -109,7 +112,20 @@ public sealed class MarkdownGenerator : DocGenerator
                     sb.AppendLine($"### {method.Name}({string.Join(", ", parameters)}): `{returnTypeText}`");
                 }
 
-                
+                sb.AppendLine("---");
+                sb.AppendLine();
+                sb.AppendLine($@"##### Declaration ");
+                sb.AppendLine("```C#");
+                sb.AppendLine();
+                sb.AppendLine(GetMethodAsString(method));
+                sb.AppendLine();
+                sb.AppendLine("```");
+                sb.AppendLine();
+                foreach (var doc in GetDocsGenAttributes(method))
+                {
+                    sb.AppendLine(doc.ToString(DocumentType));
+                    sb.AppendLine();
+                }   
             }
             sb.AppendLine();
         }
@@ -123,13 +139,6 @@ public sealed class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var property in properties)
             {
-
-                foreach (var doc in GetDocsGenAttributes(property))
-                {
-                    sb.AppendLine(doc.ToString(DocumentType));
-                    sb.AppendLine();
-                }
-
                 if (property.PropertyType.IsGenericType)
                 {
                     var name = property.PropertyType.Name.Split('`')[0];
@@ -140,6 +149,24 @@ public sealed class MarkdownGenerator : DocGenerator
                 {
                     sb.AppendLine($"### {property.Name} : `{property.PropertyType.Name}`");
                 }
+
+                sb.AppendLine("---");
+                sb.AppendLine();
+                sb.AppendLine($@"##### Declaration ");
+                sb.AppendLine("```C#");
+                sb.AppendLine();
+                sb.AppendLine(GetPropertyAsString(property));
+                sb.AppendLine();
+                sb.AppendLine("```");
+                sb.AppendLine();
+
+                foreach (var doc in GetDocsGenAttributes(property))
+                {
+                    sb.AppendLine(doc.ToString(DocumentType));
+                    sb.AppendLine();
+                }
+
+                
 
             }
             sb.AppendLine();
@@ -154,12 +181,6 @@ public sealed class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var field in fields)
             {
-                foreach (var doc in GetDocsGenAttributes(field))
-                {
-                    sb.AppendLine(doc.ToString(DocumentType));
-                    sb.AppendLine();
-                }
-
                 if (field.FieldType.IsGenericType)
                 {
                     var name = field.FieldType.Name.Split('`')[0];
@@ -170,6 +191,22 @@ public sealed class MarkdownGenerator : DocGenerator
                 {
                     sb.AppendLine($"### {field.Name}: `{field.FieldType.Name}`");
                 }
+                sb.AppendLine("---");
+                sb.AppendLine();
+                sb.AppendLine($@"##### Declaration ");
+                sb.AppendLine("```C#");
+                sb.AppendLine();
+                sb.AppendLine(GetFieldAsString(field));
+                sb.AppendLine();
+                sb.AppendLine("```");
+                sb.AppendLine();
+                foreach (var doc in GetDocsGenAttributes(field))
+                {
+                    sb.AppendLine(doc.ToString(DocumentType));
+                    sb.AppendLine();
+                }
+
+               
 
             }
             sb.AppendLine();
@@ -184,12 +221,6 @@ public sealed class MarkdownGenerator : DocGenerator
             sb.AppendLine();
             foreach (var @event in events)
             {
-                foreach (var doc in GetDocsGenAttributes(@event))
-                {
-                    sb.AppendLine(doc.ToString(DocumentType));
-                    sb.AppendLine();
-                }
-
                 if (@event.EventHandlerType.IsGenericType)
                 {
                     var name = @event.EventHandlerType.Name.Split('`')[0];
@@ -200,7 +231,21 @@ public sealed class MarkdownGenerator : DocGenerator
                 {
                     sb.AppendLine($"### {@event.Name}: `{@event.EventHandlerType}`");
                 }
-                
+
+                sb.AppendLine("---");
+                sb.AppendLine();
+                sb.AppendLine($@"##### Declaration ");
+                sb.AppendLine("```C#");
+                sb.AppendLine();
+                sb.AppendLine(GetEventAsString(@event));
+                sb.AppendLine();
+                sb.AppendLine("```");
+                sb.AppendLine();
+                foreach (var doc in GetDocsGenAttributes(@event))
+                {
+                    sb.AppendLine(doc.ToString(DocumentType));
+                    sb.AppendLine();
+                }   
             }
             sb.AppendLine();
         }
@@ -224,7 +269,16 @@ public sealed class MarkdownGenerator : DocGenerator
         GetTypeInfo(type, sb, "#");
         sb.AppendLine();
         sb.AppendLine($"**Namespace:** `{type.Namespace ?? type.Assembly?.GetName().Name}`");
-
+        sb.AppendLine();
+        sb.AppendLine($"**Assembly:** `{type.Assembly?.GetName().Name}`");
+        sb.AppendLine();
+        sb.AppendLine("#### Syntax ");
+        sb.AppendLine($@"```C#");
+        sb.AppendLine();
+        sb.AppendLine($@"{GetTypeAsString(type)}");
+        sb.AppendLine();
+        sb.AppendLine($@"```");
+        sb.AppendLine();
         foreach (var doc in GetDocsGenAttributes(type))
         {
             sb.AppendLine(doc.ToString(DocumentType));
@@ -249,15 +303,30 @@ public sealed class MarkdownGenerator : DocGenerator
     {
         if (type.IsGenericParameter)
         {
-            var constraints = type.GetGenericParameterConstraints().Select(x => x.Name).ToArray();
+            var constraints = type.GetGenericParameterConstraints().Where(x => x != typeof(ValueType)).Select(x => x.Name).ToArray();
             var constraintsText = string.Join(",", constraints);
 
             if (string.IsNullOrEmpty(constraintsText))
             {
                 var attributes = type.GenericParameterAttributes;
-                if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) != 0)
+
+                if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) == GenericParameterAttributes.ReferenceTypeConstraint)
                 {
+                    if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
+                    {
+                        return $"{type.Name}:{Reference_Type},{Default_Constructor}";
+                    }
                     return $"{type.Name}:{Reference_Type}";
+
+                }
+
+                if ((attributes & GenericParameterAttributes.NotNullableValueTypeConstraint) == GenericParameterAttributes.NotNullableValueTypeConstraint)
+                {
+                    return $"{type.Name}:{ValueType_Type}";
+                }
+                if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
+                {
+                    return $"{type.Name}:{Default_Constructor}";
                 }
                 return type.Name;
             }

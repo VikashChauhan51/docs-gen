@@ -36,7 +36,7 @@ public sealed class XmlGenerator : DocGenerator
 
     private void GetConstructorsInfo(Type type, StringBuilder sb)
     {
-        var constructors = type.GetAllConstructors().Where(c => c.IsPublic || c.IsFamily).ToList();
+        var constructors = type.GetAllConstructors().Where(c => c.IsStatic || c.IsPublic || c.IsFamily).ToList();
         if (constructors != null && constructors.Any())
         {
             sb.AppendLine("<constructors>");
@@ -45,6 +45,7 @@ public sealed class XmlGenerator : DocGenerator
 
                 var parameters = constructor.GetParameters().Select(p => GetGenericParemeterTypeName(p)).ToList();
                 sb.AppendLine($@"<member name=""C:{constructor.DeclaringType.Name.Split('`')[0]}({string.Join(", ", parameters)})"">");
+                sb.AppendLine($@"<declaration>{GetConstructorAsString(constructor)}</declaration>");
                 foreach (var doc in GetDocsGenAttributes(constructor))
                 {
                     sb.AppendLine(doc.ToString(DocumentType));
@@ -68,7 +69,7 @@ public sealed class XmlGenerator : DocGenerator
                 {
                     var returnParms = method.ReturnType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
                     var returnParmText = string.Join(",", returnParms);
-                    returnTypeText = $"{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>";
+                    returnTypeText = $"{method.ReturnType.Name.Split('`')[0]}&lt;{returnParmText}&gt;";
                 }
                 else if (method.ReturnType.IsArray || method.ReturnType.IsSZArray)
                 {
@@ -76,7 +77,7 @@ public sealed class XmlGenerator : DocGenerator
                     var returnParmText = string.Join(",", returnParms);
                     if (!string.IsNullOrEmpty(returnParmText))
                     {
-                        returnTypeText = $"{method.ReturnType.Name.Split('`')[0]}<{returnParmText}>[]";
+                        returnTypeText = $"{method.ReturnType.Name.Split('`')[0]}&lt;{returnParmText}&gt;[]";
                     }
                     else
                     {
@@ -93,13 +94,14 @@ public sealed class XmlGenerator : DocGenerator
                 {
                     var pars = method.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList(); ;
                     var parmText = string.Join(",", pars);
-                    sb.AppendLine($@"<member name=""M:{method.Name.Split('`')[0]}<{parmText}>({string.Join(", ", parameters)}):{returnTypeText}"">");
+                    sb.AppendLine($@"<member name=""M:{method.Name.Split('`')[0]}&lt;{parmText}&gt;({string.Join(", ", parameters)}):{returnTypeText}"">");
                 }
                 else
                 {
                     sb.AppendLine($@"<member name=""M:{method.Name}({string.Join(", ", parameters)}):{returnTypeText}"">");
                 }
 
+                sb.AppendLine($@"<declaration>{GetMethodAsString(method)}</declaration>");
                 foreach (var doc in GetDocsGenAttributes(method))
                 {
                     sb.AppendLine(doc.ToString(DocumentType));
@@ -121,12 +123,13 @@ public sealed class XmlGenerator : DocGenerator
                 {
                     var name = property.PropertyType.Name.Split('`')[0];
                     var parameters = property.PropertyType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
-                    sb.AppendLine($@"<member name=""P:{property.Name}:{name}<{string.Join(", ", parameters)}>"">");
+                    sb.AppendLine($@"<member name=""P:{property.Name}:{name}&lt;{string.Join(", ", parameters)}&gt;"">");
                 }
                 else
                 {
                     sb.AppendLine($@"<member name=""P:{property.Name}:{property.PropertyType.Name}"">");
                 }
+                sb.AppendLine($@"<declaration>{GetPropertyAsString(property)}</declaration>");
                 foreach (var doc in GetDocsGenAttributes(property))
                 {
                     sb.AppendLine(doc.ToString(DocumentType));
@@ -148,12 +151,13 @@ public sealed class XmlGenerator : DocGenerator
                 {
                     var name = field.FieldType.Name.Split('`')[0];
                     var parameters = field.FieldType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
-                    sb.AppendLine($@"<member name=""F:{field.Name.Split('`')[0]}:{name}<{string.Join(", ", parameters)}>"">");
+                    sb.AppendLine($@"<member name=""F:{field.Name.Split('`')[0]}:{name}&lt;{string.Join(", ", parameters)}&gt;"">");
                 }
                 else
                 {
                     sb.AppendLine($@"<member name=""F:{field.Name}:{field.FieldType.Name}"">");
                 }
+                sb.AppendLine($@"<declaration>{GetFieldAsString(field)}</declaration>");
                 foreach (var doc in GetDocsGenAttributes(field))
                 {
                     sb.AppendLine(doc.ToString(DocumentType));
@@ -176,12 +180,13 @@ public sealed class XmlGenerator : DocGenerator
                 {
                     var name = @event.EventHandlerType.Name.Split('`')[0];
                     var parameters = @event.EventHandlerType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
-                    sb.AppendLine($@"<member name=""M:{@event.Name}:{name}<{string.Join(", ", parameters)}>"">");
+                    sb.AppendLine($@"<member name=""M:{@event.Name}:{name}&lt;{string.Join(", ", parameters)}&gt;"">");
                 }
                 else
                 {
                     sb.AppendLine($@"<member name=""M:{@event.Name}:{@event.EventHandlerType}"">");
                 }
+                sb.AppendLine($@"<declaration>{GetEventAsString(@event)}</declaration>");
                 foreach (var doc in GetDocsGenAttributes(@event))
                 {
                     sb.AppendLine(doc.ToString(DocumentType));
@@ -214,13 +219,15 @@ public sealed class XmlGenerator : DocGenerator
             var name = type.Name.Split('`')[0];
             var parameters = type.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
             var parmText = string.Join(",", parameters);
-            sb.AppendLine($@"<type-info name=""T:{name}<{parmText}>"">");
+            sb.AppendLine($@"<type-info name=""T:{name}&lt;{parmText}&gt;"">");
         }
         else
         {
             sb.AppendLine($@"<type-info name=""T:{type.Name}"">");
         }
         sb.AppendLine($@"<namespace name=""{type.Namespace ?? type.Assembly?.GetName().Name}""></namespace>");
+        sb.AppendLine($@"<assembly name=""{ type.Assembly?.GetName().Name}""></assembly>");
+        sb.AppendLine($@"<syntax>{GetTypeAsString(type)}</syntax>");
         foreach (var doc in GetDocsGenAttributes(type))
         {
             sb.AppendLine(doc.ToString(DocumentType));
@@ -234,7 +241,7 @@ public sealed class XmlGenerator : DocGenerator
             var name = type.Name.Split('`')[0];
             var parameters = type.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
             var parmText = string.Join(",", parameters);
-            sb.AppendLine($@"<member name=""T:{name}<{parmText}>"">");
+            sb.AppendLine($@"<member name=""T:{name}&lt;{parmText}&gt;"">");
         }
         else
         {
@@ -245,16 +252,32 @@ public sealed class XmlGenerator : DocGenerator
     {
         if (type.IsGenericParameter)
         {
-            var constraints = type.GetGenericParameterConstraints().Select(x => x.Name).ToArray();
+            var constraints = type.GetGenericParameterConstraints().Where(x => x != typeof(ValueType)).Select(x => x.Name).ToArray();
             var constraintsText = string.Join(",", constraints);
 
             if (string.IsNullOrEmpty(constraintsText))
             {
                 var attributes = type.GenericParameterAttributes;
-                if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) != 0)
+
+                if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) == GenericParameterAttributes.ReferenceTypeConstraint)
                 {
+                    if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
+                    {
+                        return $"{type.Name}:{Reference_Type},{Default_Constructor}";
+                    }
                     return $"{type.Name}:{Reference_Type}";
+
                 }
+
+                if ((attributes & GenericParameterAttributes.NotNullableValueTypeConstraint) == GenericParameterAttributes.NotNullableValueTypeConstraint)
+                {
+                    return $"{type.Name}:{ValueType_Type}";
+                }
+                if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
+                {
+                    return $"{type.Name}:{Default_Constructor}";       
+                }
+
                 return type.Name;
             }
             else
@@ -268,7 +291,7 @@ public sealed class XmlGenerator : DocGenerator
             var name = type.Name.Split('`')[0];
             var parameters = type.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
             var parmText = string.Join(",", parameters);
-            return $"{name}<{parmText}>";
+            return $"{name}&lt;{parmText}&gt;";
         }
 
         if (type.IsArray)
@@ -277,7 +300,7 @@ public sealed class XmlGenerator : DocGenerator
             var returnParmText = string.Join(",", returnParms);
             if (!string.IsNullOrEmpty(returnParmText))
             {
-                return $"[{type.Name.Split('`')[0]}<{returnParmText}>]";
+                return $"[{type.Name.Split('`')[0]}&lt;{returnParmText}&gt;]";
             }
             else
             {
@@ -295,7 +318,7 @@ public sealed class XmlGenerator : DocGenerator
             var name = type.ParameterType.Name.Split('`')[0];
             var parameters = type.ParameterType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
             var parmText = string.Join(",", parameters);
-            return $"{name}<{parmText}> {pName}";
+            return $"{name}&lt;{parmText}&gt; {pName}";
         }
 
         if (type.ParameterType.IsArray)
@@ -304,7 +327,7 @@ public sealed class XmlGenerator : DocGenerator
             var returnParmText = string.Join(",", returnParms);
             if (!string.IsNullOrEmpty(returnParmText))
             {
-                return $"{type.ParameterType.Name.Split('`')[0]}<{returnParmText}>[] {pName}";
+                return $"{type.ParameterType.Name.Split('`')[0]}&lt;{returnParmText}&gt;[] {pName}";
             }
         }
         return $"{type.ParameterType.Name.Split('`')[0]} {pName}";

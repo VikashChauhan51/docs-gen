@@ -465,7 +465,7 @@ public abstract class DocGenerator
         switch (DocumentType)
         {
             case DocType.Xml:
-                return new("<", ">");
+                return new("&lt;", "&gt;");
             case DocType.Md:
                 return new("<", ">");
             case DocType.Yml:

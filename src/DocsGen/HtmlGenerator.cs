@@ -226,7 +226,7 @@ label {
 
     private void GetConstructorsInfo(Type type, StringBuilder sb)
     {
-        var constructors = type.GetAllConstructors().Where(c => c.IsPublic || c.IsFamily).ToList();
+        var constructors = type.GetAllConstructors().Where(c =>c.IsStatic || c.IsPublic || c.IsFamily).ToList();
         if (constructors != null && constructors.Any())
         {
             sb.AppendLine("<div>");
@@ -237,6 +237,8 @@ label {
                 sb.AppendLine(@"<div class=""card"">");
                 var parameters = constructor.GetParameters().Select(p => GetGenericParemeterTypeName(p)).ToList();
                 sb.AppendLine($@"<h3><p><span>{constructor.DeclaringType.Name.Split('`')[0]}({string.Join(", ", parameters)})</p></h3>");
+                sb.AppendLine($@"<h5 class=""declaration"">Declaration</h5>");
+                sb.AppendLine($@"<pre><code class=""hljs"">{GetConstructorAsString(constructor)}</code></pre>");
                 sb.AppendLine(@"<div class=""card-body"">");
                 foreach (var doc in GetDocsGenAttributes(constructor))
                 {
@@ -331,6 +333,8 @@ label {
                 {
                     sb.AppendLine($@"<h3><p><span>{property.Name}:<strong>{property.PropertyType.Name}</strong></span></p></h3>");
                 }
+                sb.AppendLine($@"<h5 class=""declaration"">Declaration</h5>");
+                sb.AppendLine($@"<pre><code class=""hljs"">{GetPropertyAsString(property)}</code></pre>");
                 sb.AppendLine(@"<div class=""card-body"">");
                 foreach (var doc in GetDocsGenAttributes(property))
                 {
@@ -363,6 +367,9 @@ label {
                 {
                     sb.AppendLine($@"<h3><p><span>{field.Name}:<strong>{field.FieldType.Name}</strong></span></p></h3>");
                 }
+
+                sb.AppendLine($@"<h5 class=""declaration"">Declaration</h5>");
+                sb.AppendLine($@"<pre><code class=""hljs"">{GetFieldAsString(field)}</code></pre>");
                 sb.AppendLine(@"<div class=""card-body"">");
                 foreach (var doc in GetDocsGenAttributes(field))
                 {
@@ -395,7 +402,8 @@ label {
                 {
                     sb.AppendLine($@"<h3><p><span>{@event.Name}:<strong>{@event.EventHandlerType}/strong></span></p></h3>");
                 }
-
+                sb.AppendLine($@"<h5 class=""declaration"">Declaration</h5>");
+                sb.AppendLine($@"<pre><code class=""hljs"">{GetEventAsString(@event)}</code></pre>");
                 sb.AppendLine(@"<div class=""card-body"">");
                 foreach (var doc in GetDocsGenAttributes(@event))
                 {

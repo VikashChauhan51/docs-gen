@@ -1,5 +1,6 @@
 ﻿
 using System.Reflection;
+using System.Xml.Linq;
 using DocsGen.Core;
 using Reflector;
 
@@ -81,36 +82,53 @@ public abstract class DocGenerator
 
     }
 
+    protected string GetConstructorAsString(ConstructorInfo constructor)
+    {
+        var constructorAccessSpecifier = string.Empty;
+        var constructorAccessModifier = constructor.IsStatic ? "static" : "";
+        var name = constructor.DeclaringType.Name.Split('`')[0];
+        var parameters = constructor.GetParameters().Select(p => GetParemeterTypeName(p)).ToList();
+        var parametersText = string.Join(",", parameters);
+        if (constructor.IsPrivate)
+        {
+            constructorAccessSpecifier = "private";
+        }
+        else if (constructor.IsPublic)
+        {
+            constructorAccessSpecifier = "public";
+        }
+        else if (constructor.IsFamilyAndAssembly)
+        {
+            constructorAccessSpecifier = "protected internal";
+        }
+        else if (constructor.IsFamily)
+        {
+            constructorAccessSpecifier = "protected";
+        }
+        else if (constructor.IsAssembly)
+        {
+            constructorAccessSpecifier = "internal";
+        }
+
+        if (DocumentType == DocType.Html)
+        {
+            return $@"&nbsp;<br><span class=""hljs-keyword"">{constructorAccessSpecifier}</span> <span class=""hljs-keyword"">{constructorAccessModifier}</span><span class=""hljs-type""> {name}</span>({parametersText})<br>&nbsp;";
+        }
+        else
+        {
+            return $@"{constructorAccessSpecifier} {constructorAccessModifier}{name}({parametersText})";
+        }
+    }
     protected string GetMethodAsString(MethodInfo method)
     {
         var methodAccessSpecifier = method.GetMethodAccessModifier();
         var methodModifier = method.GetMethodModifiers();
-        var methodReturnTypes = GetMethodReturnType(method);
+        var methodReturnTypes = GetTypeMemberReturnTypes(method.ReturnType);
         var name = method.Name.Split('`')[0];
         var parameters = method.GetParameters().Select(p => GetParemeterTypeName(p)).ToList();
         var parametersText = string.Join(",", parameters);
         var constraints = GetMethodConstraints(method);
         var constraintsText = string.Join(" ", constraints);
-        if (DocumentType == DocType.Html)
-        {
-            if (method.IsGenericMethod)
-            {
-                var (start, end) = GetSeperators();
-                var pars = method.GetGenericArguments().Select(p =>
-                {
-                    var (startTag, endTag) = GetWrapperTag(p.IsPrimitive(), p.IsInterface);
-                    return $"{startTag}{p.Name.Split('`')[0]}{endTag}";
-
-                }).ToList();
-                var parmText = string.Join(",", pars);
-
-                return $@"&nbsp;<br><span class=""hljs-keyword"">{methodAccessSpecifier}</span> <span class=""hljs-keyword"">{methodModifier}</span>&nbsp;{methodReturnTypes}<span class=""hljs-type""> {name}</span>{start}{parmText}{end}({parametersText}) {(constraints.Any() ? constraintsText : "")}<br>&nbsp;";
-            }
-            else
-            {
-                return $@"&nbsp;<br><span class=""hljs-keyword"">{methodAccessSpecifier}</span> <span class=""hljs-keyword"">{methodModifier}</span>&nbsp;{methodReturnTypes}<span class=""hljs-type""> {name}</span>({parametersText})<br>&nbsp;";
-            }
-        }
         if (method.IsGenericMethod)
         {
             var (start, end) = GetSeperators();
@@ -121,34 +139,91 @@ public abstract class DocGenerator
 
             }).ToList();
             var parmText = string.Join(",", pars);
-            return $@"{methodAccessSpecifier} {methodModifier} {methodReturnTypes} {name}{start}{parmText}{end}({parametersText}) {constraintsText}";
+
+            if (DocumentType == DocType.Html)
+            {
+                return $@"&nbsp;<br><span class=""hljs-keyword"">{methodAccessSpecifier}</span> <span class=""hljs-keyword"">{methodModifier}</span>&nbsp;{methodReturnTypes}<span class=""hljs-type""> {name}</span>{start}{parmText}{end}({parametersText}) {(constraints.Any() ? constraintsText : "")}<br>&nbsp;";
+            }
+            else
+            {
+                return $@"{methodAccessSpecifier} {methodModifier} {methodReturnTypes} {name}{start}{parmText}{end}({parametersText}) {constraintsText}";
+            }
+
         }
         else
         {
-            return $@"{methodAccessSpecifier} {methodModifier} {methodReturnTypes} {name}({parametersText})";
+            if (DocumentType == DocType.Html)
+            {
+                return $@"&nbsp;<br><span class=""hljs-keyword"">{methodAccessSpecifier}</span> <span class=""hljs-keyword"">{methodModifier}</span>&nbsp;{methodReturnTypes}<span class=""hljs-type""> {name}</span>({parametersText})<br>&nbsp;";
+            }
+            else
+            {
+                return $@"{methodAccessSpecifier} {methodModifier} {methodReturnTypes} {name}({parametersText})";
+            }
+
         }
-       
     }
 
     protected string GetPropertyAsString(PropertyInfo property)
     {
         var propertyAccessSpecifier = property.GetPropertyAccessModifier();
         var propertyModifier = property.GetPropertyModifiers();
-        return string.Empty;
+        var propertyReturnTypes = GetTypeMemberReturnTypes(property.PropertyType);
+        var name = property.Name.Split("`")[0];
+        var getText = property.CanRead ? $@"<span class=""hljs-keyword"">get</span>;" : "";
+        var setText = string.Empty;
+        if (property.SetIsAllowed())
+        {
+            setText = $@"<span class=""hljs-keyword"">set</span>;";
+        }
+        else if (property.SetIsAllowed(checkInitSetter: true))
+        {
+            setText = $@"<span class=""hljs-keyword"">init</span>;";
+        }
+        var propertGeterSetter = $"{{{getText}{setText}}}";
+        if (DocumentType == DocType.Html)
+        {
+            return $@"&nbsp;<br><span class=""hljs-keyword"">{propertyAccessSpecifier}</span> <span class=""hljs-keyword"">{propertyModifier}</span>&nbsp;{propertyReturnTypes}<span class=""hljs-type""> {name}</span>{propertGeterSetter}<br>&nbsp;";
+        }
+        else
+        {
+            return $@"{propertyAccessSpecifier} {propertyModifier} {propertyReturnTypes} {name}{propertGeterSetter}";
+        }
+
     }
 
     protected string GetFieldAsString(FieldInfo field)
     {
         var fieldAccessSpecifier = field.GetFieldAccessModifier();
         var fieldModifier = field.GetFieldModifiers();
-        return string.Empty;
+        var fieldReturnTypes = GetTypeMemberReturnTypes(field.FieldType);
+        var name = field.Name.Split("`")[0];
+        if (DocumentType == DocType.Html)
+        {
+            return $@"&nbsp;<br><span class=""hljs-keyword"">{fieldAccessSpecifier}</span> <span class=""hljs-keyword"">{fieldModifier}</span>&nbsp;{fieldReturnTypes}<span class=""hljs-type""> {name}</span><br>&nbsp;";
+        }
+        else
+        {
+            return $@"{fieldAccessSpecifier} {fieldModifier} {fieldReturnTypes} {name}";
+        }
+
     }
 
     protected string GetEventAsString(EventInfo @event)
     {
         var eventAccessSpecifier = @event.GetEventAccessModifier();
         var eventModifier = @event.GetEventModifiers();
-        return string.Empty;
+        var eventReturnTypes = GetTypeMemberReturnTypes(@event.EventHandlerType);
+        var name = @event.Name.Split("`")[0];
+        if (DocumentType == DocType.Html)
+        {
+            return $@"&nbsp;<br><span class=""hljs-keyword"">{eventAccessSpecifier}</span> <span class=""hljs-keyword"">{eventModifier}</span>&nbsp;{eventReturnTypes}<span class=""hljs-type""> {name}</span><br>&nbsp;";
+        }
+        else
+        {
+            return $@"{eventAccessSpecifier} {eventModifier} {eventReturnTypes} {name}";
+        }
+
     }
     protected string GetTypeName(Type type)
     {
@@ -194,38 +269,36 @@ public abstract class DocGenerator
         }
         return $"{startTag}{type.Name}{endTag}";
     }
-
-    protected string GetMethodReturnType(MethodInfo method)
+    protected string GetTypeMemberReturnTypes(Type type)
     {
-        var (startTag, endTag) = GetWrapperTag(method.ReturnType.IsPrimitive() , method.ReturnType.IsInterface);
+        var (startTag, endTag) = GetWrapperTag(type.IsPrimitive(), type.IsInterface);
         var (start, end) = GetSeperators();
         var (defaultStartTag, defaultEndTag) = GetDefaultWrapperTag();
-        if (method.ReturnType.IsGenericType)
+        if (type.IsGenericType)
         {
-            var returnParms = method.ReturnType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
+            var returnParms = type.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
             var returnParmText = string.Join(",", returnParms);
-            return $"{startTag}{method.ReturnType.Name.Split('`')[0]}{endTag}{start}{returnParmText}{end}";
+            return $"{startTag}{type.Name.Split('`')[0]}{endTag}{start}{returnParmText}{end}";
         }
-        else if (method.ReturnType.IsArray || method.ReturnType.IsSZArray)
+        else if (type.IsArray || type.IsSZArray)
         {
-            var returnParms = method.ReturnType.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
+            var returnParms = type.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList();
             var returnParmText = string.Join(",", returnParms);
             if (!string.IsNullOrEmpty(returnParmText))
             {
-                return $"{startTag}{method.ReturnType.Name.Split('`')[0]}{endTag}{start}{returnParmText}{end}{defaultStartTag}[]{defaultEndTag}";
+                return $"{startTag}{type.Name.Split('`')[0]}{endTag}{start}{returnParmText}{end}{defaultStartTag}[]{defaultEndTag}";
             }
             else
             {
-                return $"{startTag}{method.ReturnType.Name.Split('`')[0].Split("[]")[0]}{endTag}{defaultStartTag}[]{defaultEndTag}";
+                return $"{startTag}{type.Name.Split('`')[0].Split("[]")[0]}{endTag}{defaultStartTag}[]{defaultEndTag}";
             }
 
         }
         else
         {
-            return $"{startTag}{method.ReturnType.Name}{endTag}";
+            return $"{startTag}{type.Name}{endTag}";
         }
     }
-
 
     protected string GetParemeterTypeName(ParameterInfo type)
     {

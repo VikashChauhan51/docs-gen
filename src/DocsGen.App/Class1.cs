@@ -27,12 +27,12 @@ public class Class1
 
 [Summary("This is document class for demo.")]
 [Remarks(Message = "Demo remarks", DocTexts = new string[] { "this is first paragraph", "this is second paragraph." })]
-public class BasicGeneric<T, V> 
+public class BasicGeneric<T, V>
 {
 
 }
 
-public class BGeneric<T, V,X> where T:unmanaged where V:unmanaged where X: class,new()
+public class BGeneric<T, V, X> where T : unmanaged where V : unmanaged where X : class, new()
 {
 
 }
@@ -68,7 +68,15 @@ public class Test<T, U>
 }
 public class MyClass<T, X> where T : class
 {
+    public T Myfield;
+    public T MyProperty { get; set; }
+    public T MyPropertyGetOnly { get; }
+    public T MyPropertySetOnly { set { Myfield = value; } }
+    public T MyPropertyInitOnly { get; init; }
 
+    public T MyPropertyPrivateSet { get; private set; }
+
+    public T MyPropertyProtectedSet { get; protected set; }
     public T GetData<V>(V flag) where V : struct
     {
         return default(T);
@@ -127,6 +135,11 @@ public class MyConstructorClass<T> : MyConstructorClassBase
     }
 
     public MyConstructorClass(string name)
+    {
+
+    }
+
+    protected internal MyConstructorClass(string name,int age)
     {
 
     }

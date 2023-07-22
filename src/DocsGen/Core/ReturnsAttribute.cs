@@ -25,7 +25,7 @@ public sealed class ReturnsAttribute : DocsGenAttribute
                 builder.AppendLine(Environment.NewLine);
                 break;
             case DocType.Yml:
-                builder.AppendLine($"returns: {this.ToString()}");
+                builder.AppendLine($"{IndentationSpace}returns: \"{GetMessageAllTrim(this.Message)}\"");
                 break;
             case DocType.Html:
                 builder.AppendLine("<summary>");

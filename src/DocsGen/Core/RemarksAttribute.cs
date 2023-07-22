@@ -46,12 +46,13 @@ public sealed class RemarksAttribute : DocsGenAttribute
                 }
                 break;
             case DocType.Yml:
-                builder.AppendLine($"remarks: {base.ToString()}");
+                builder.AppendLine($"{IndentationSpace}remarks: |");
+                builder.AppendLine($"{IndentationSpace} {GetMessageAllTrim(this.Message)}");
                 foreach (var para in DocTexts)
                 {
                     if (!string.IsNullOrEmpty(para))
                     {
-                        builder.AppendLine($"- {para}");
+                        builder.AppendLine($"{IndentationSpace} {GetMessageAllTrim(para)}");
                     }
                 }
                 break;

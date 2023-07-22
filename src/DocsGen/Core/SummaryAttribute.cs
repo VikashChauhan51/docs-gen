@@ -2,7 +2,7 @@
 
 namespace DocsGen.Core;
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Interface |  AttributeTargets.Delegate | AttributeTargets.Event | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Interface | AttributeTargets.Delegate | AttributeTargets.Event | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
 public sealed class SummaryAttribute : DocsGenAttribute
 {
     public SummaryAttribute() { }
@@ -24,7 +24,7 @@ public sealed class SummaryAttribute : DocsGenAttribute
                 builder.AppendLine(Environment.NewLine);
                 break;
             case DocType.Yml:
-                builder.AppendLine($"summary: {this.ToString()}");
+                builder.AppendLine($"{IndentationSpace}summary: \"{GetMessageAllTrim(this.Message)}\"");
                 break;
             case DocType.Html:
                 builder.AppendLine("<summary>");

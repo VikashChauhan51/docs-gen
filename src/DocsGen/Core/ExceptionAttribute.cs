@@ -24,9 +24,10 @@ public class ExceptionAttribute : DocsGenAttribute
                 builder.AppendLine($"> {(!string.IsNullOrEmpty(this.MemberType) ? $"`{this.MemberType}`" : "")}: {base.ToString()}");
                 break;
             case DocType.Yml:
-                builder.AppendLine($"exception: {base.ToString()}");
+                builder.AppendLine($"{IndentationSpace}exception:");
+                builder.AppendLine($"{IndentationSpace} - message: \"{base.GetMessageAllTrim(this.Message)}\"");
                 if (string.IsNullOrEmpty(this.MemberType))
-                    builder.AppendLine($"- type: {this.MemberType}");
+                    builder.AppendLine($"{IndentationSpace} - type: \"{this.MemberType}\"");
                 break;
             case DocType.Html:
                 builder.AppendLine($"<p><strong>exception: </strong><span><b>{this.MemberType} </b></span><abbr>{base.ToString()}</abbr></p>");

@@ -32,8 +32,23 @@ public sealed class ExampleAttribute : DocsGenAttribute
                 builder.AppendLine($"```C#{Environment.NewLine}{this.Code}{Environment.NewLine}```");
                 break;
             case DocType.Yml:
-                builder.AppendLine($"example: {base.ToString()}");
-                builder.AppendLine($"- code: {this.Code}");
+                builder.AppendLine($"{IndentationSpace}example:");
+                builder.AppendLine($"{IndentationSpace} - message: \"{GetMessageAllTrim(this.Message)}\"");
+                builder.AppendLine($"{IndentationSpace} - code: |");
+                var codes = this.Code.Split(Environment.NewLine) ?? new string[0];
+                foreach (var line in codes)
+                {
+                    if (string.IsNullOrEmpty(line))
+                    {
+                        builder.AppendLine($"{IndentationSpace}      {line}");
+                    }
+                    else
+                    {
+                        builder.AppendLine($"{IndentationSpace}      {GetMessageAllTrim(line)}");
+                    }
+                }
+
+
                 break;
             case DocType.Html:
                 builder.AppendLine("<summary>");

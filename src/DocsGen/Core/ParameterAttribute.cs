@@ -27,9 +27,10 @@ public sealed class ParameterAttribute : DocsGenAttribute
                 builder.AppendLine($"> **param:** `{ParameterType}` {ParameterName}: {Message}");
                 break;
             case DocType.Yml:
-                builder.AppendLine($"param: {ParameterName}");
-                builder.AppendLine($"- type: {ParameterType}");
-                builder.AppendLine($"- message: {Message}");
+                builder.AppendLine($"{IndentationSpace}param:");
+                builder.AppendLine($"{IndentationSpace}  - name: \"{ParameterName}\"");
+                builder.AppendLine($"{IndentationSpace}  - type: \"{ParameterType}\"");
+                builder.AppendLine($"{IndentationSpace}  - message: \"{GetMessageAllTrim(this.Message)}\"");
                 break;
             case DocType.Html:
                 builder.AppendLine($"<p><strong>param: </strong><span>{this.ParameterName} <strong>({this.ParameterType})</strong> : </span><abbr>{Message}</abbr></p>");

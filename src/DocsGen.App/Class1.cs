@@ -228,3 +228,8 @@ public class MyXmlClass
         return new string[0];
     }
 }
+
+
+public record MyRecord(string Name, int Age);
+
+public readonly record struct MyrecordStruct(string Name, int Age);

@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Text;
+using System.Xml.Linq;
 using DocsGen.Core;
 using Reflector;
 
@@ -90,15 +91,21 @@ public sealed class XmlGenerator : DocGenerator
                     returnTypeText = method.ReturnType.Name;
                 }
 
+                var name = method.Name.Split('`')[0];
+                if (name == "<Clone>$")
+                {
+                        name = "&lt;Clone&gt;$";
+                }
+
                 if (method.IsGenericMethod)
                 {
                     var pars = method.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList(); ;
                     var parmText = string.Join(",", pars);
-                    sb.AppendLine($@"<member name=""M:{method.Name.Split('`')[0]}&lt;{parmText}&gt;({string.Join(", ", parameters)}):{returnTypeText}"">");
+                    sb.AppendLine($@"<member name=""M:{name}&lt;{parmText}&gt;({string.Join(", ", parameters)}):{returnTypeText}"">");
                 }
                 else
                 {
-                    sb.AppendLine($@"<member name=""M:{method.Name}({string.Join(", ", parameters)}):{returnTypeText}"">");
+                    sb.AppendLine($@"<member name=""M:{name}({string.Join(", ", parameters)}):{returnTypeText}"">");
                 }
 
                 sb.AppendLine($@"<declaration>{GetMethodAsString(method)}</declaration>");
@@ -226,7 +233,7 @@ public sealed class XmlGenerator : DocGenerator
             sb.AppendLine($@"<type-info name=""T:{type.Name}"">");
         }
         sb.AppendLine($@"<namespace name=""{type.Namespace ?? type.Assembly?.GetName().Name}""></namespace>");
-        sb.AppendLine($@"<assembly name=""{ type.Assembly?.GetName().Name}""></assembly>");
+        sb.AppendLine($@"<assembly name=""{type.Assembly?.GetName().Name}""></assembly>");
         sb.AppendLine($@"<syntax>{GetTypeAsString(type)}</syntax>");
         foreach (var doc in GetDocsGenAttributes(type))
         {
@@ -275,7 +282,7 @@ public sealed class XmlGenerator : DocGenerator
                 }
                 if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
                 {
-                    return $"{type.Name}:{Default_Constructor}";       
+                    return $"{type.Name}:{Default_Constructor}";
                 }
 
                 return type.Name;

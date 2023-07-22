@@ -125,6 +125,13 @@ public abstract class DocGenerator
         var methodModifier = method.GetMethodModifiers();
         var methodReturnTypes = GetTypeMemberReturnTypes(method.ReturnType);
         var name = method.Name.Split('`')[0];
+        if (name == "<Clone>$")
+        {
+            if (DocumentType == DocType.Html || DocumentType == DocType.Xml)
+            {
+                name = "&lt;Clone&gt;$";
+            }
+        }
         var parameters = method.GetParameters().Select(p => GetParemeterTypeName(p)).ToList();
         var parametersText = string.Join(",", parameters);
         var constraints = GetMethodConstraints(method);
@@ -170,7 +177,7 @@ public abstract class DocGenerator
         var propertyModifier = property.GetPropertyModifiers();
         var propertyReturnTypes = GetTypeMemberReturnTypes(property.PropertyType);
         var name = property.Name.Split("`")[0];
-       
+
         if (DocumentType == DocType.Html)
         {
             var getText = property.CanRead ? $@"<span class=""hljs-keyword"">get</span>;" : "";

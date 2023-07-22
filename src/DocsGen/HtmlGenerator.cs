@@ -290,15 +290,20 @@ label {
                     returnTypeText = method.ReturnType.Name;
                 }
 
+                var name = method.Name.Split('`')[0];
+                if (name == "<Clone>$")
+                {
+                    name = "&lt;Clone&gt;$";
+                }
                 if (method.IsGenericMethod)
                 {
                     var pars = method.GetGenericArguments().Select(p => GetGenericTypeName(p)).ToList(); ;
                     var parmText = string.Join(",", pars);
-                    sb.AppendLine($@"<h3 class=""card-title""><p><span>{method.Name.Split('`')[0]}&lt;{parmText}&gt;({string.Join(", ", parameters)}):<strong>{returnTypeText}</strong></span></p></h3>");
+                    sb.AppendLine($@"<h3 class=""card-title""><p><span>{name}&lt;{parmText}&gt;({string.Join(", ", parameters)}):<strong>{returnTypeText}</strong></span></p></h3>");
                 }
                 else
                 {
-                    sb.AppendLine($@"<h3 class=""card-title""><p><span>{method.Name}({string.Join(", ", parameters)}):<strong>{returnTypeText}</strong></span></p></h3>");
+                    sb.AppendLine($@"<h3 class=""card-title""><p><span>{name}({string.Join(", ", parameters)}):<strong>{returnTypeText}</strong></span></p></h3>");
                 }
                 sb.AppendLine($@"<h5 class=""declaration"">Declaration</h5>");
                 sb.AppendLine($@"<pre><code class=""hljs"">{GetMethodAsString(method)}</code></pre>");

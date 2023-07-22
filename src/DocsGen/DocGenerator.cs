@@ -84,31 +84,11 @@ public abstract class DocGenerator
 
     protected string GetConstructorAsString(ConstructorInfo constructor)
     {
-        var constructorAccessSpecifier = string.Empty;
-        var constructorAccessModifier = constructor.IsStatic ? "static" : "";
+        var constructorAccessSpecifier = constructor.GetConstructorAccessModifier();
+        var constructorAccessModifier = constructor.GetConstructorModifiers();
         var name = constructor.DeclaringType.Name.Split('`')[0];
         var parameters = constructor.GetParameters().Select(p => GetParemeterTypeName(p)).ToList();
         var parametersText = string.Join(",", parameters);
-        if (constructor.IsPrivate)
-        {
-            constructorAccessSpecifier = "private";
-        }
-        else if (constructor.IsPublic)
-        {
-            constructorAccessSpecifier = "public";
-        }
-        else if (constructor.IsFamilyAndAssembly)
-        {
-            constructorAccessSpecifier = "protected internal";
-        }
-        else if (constructor.IsFamily)
-        {
-            constructorAccessSpecifier = "protected";
-        }
-        else if (constructor.IsAssembly)
-        {
-            constructorAccessSpecifier = "internal";
-        }
 
         if (DocumentType == DocType.Html)
         {

@@ -1,11 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <SignAssembly>True</SignAssembly>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>DocsGen</Title>
+    <Description>C# type to document generator (xml,md,yaml,html).</Description>
+    <PackageProjectUrl>https://github.com/VikashChauhan51/docs-gen</PackageProjectUrl>
+    <Authors>VikashChauhan51</Authors>
+    <Copyright>Copyright © VikashChauhan51, 2023</Copyright>
+    <RepositoryUrl>https://github.com/VikashChauhan51/docs-gen</RepositoryUrl>
+    <PackageTags>type to document generator;C# type to document generator; document generator;</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <AssemblyOriginatorKeyFile>..\DocsGen.snk</AssemblyOriginatorKeyFile>
+    <RepositoryType>git</RepositoryType>
+    <ProjectGuid>{A7C7C9D8-8A71-5DF0-8059-C5D5C55E15C2}</ProjectGuid>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="VReflector" Version="1.3.1" />
   </ItemGroup>

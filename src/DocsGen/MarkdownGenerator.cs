@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 
 namespace DocsGen;
-public sealed class MarkdownGenerator : DocGenerator
+internal sealed class MarkdownGenerator : DocGenerator
 {
     public override DocType DocumentType => DocType.Md;
 

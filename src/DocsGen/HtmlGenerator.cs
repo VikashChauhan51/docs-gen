@@ -6,7 +6,7 @@ using Reflector;
 
 namespace DocsGen;
 
-public sealed class HtmlGenerator : DocGenerator
+internal sealed class HtmlGenerator : DocGenerator
 {
     public override DocType DocumentType => DocType.Html;
 

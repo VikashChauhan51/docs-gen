@@ -5,7 +5,7 @@ using DocsGen.Core;
 using Reflector;
 
 namespace DocsGen;
-public sealed class XmlGenerator : DocGenerator
+internal sealed class XmlGenerator : DocGenerator
 {
     public override DocType DocumentType => DocType.Xml;
 

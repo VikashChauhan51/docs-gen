@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Text;
 
 namespace DocsGen;
-public class YamlGenerator : DocGenerator
+internal class YamlGenerator : DocGenerator
 {
     public override DocType DocumentType => DocType.Yml;
 
